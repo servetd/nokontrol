@@ -371,11 +371,14 @@ render_steps(st.session_state.get("step", 0))
 st.session_state.setdefault("step", 0)
 st.session_state.setdefault("data_okuma", [])
 st.session_state.setdefault("idx", 0)
-st.session_state.setdefault("no_ilk_input", 2)
-st.session_state.setdefault("no_son_input", 7)
-st.session_state.setdefault("ad_ilk_input", 13)
-st.session_state.setdefault("ad_son_input", 32)
-st.session_state.setdefault("son_sutun_input", 215)
+# Sütun konumları (1-tabanlı, kullanıcının gördüğü değerler).
+# Form widget'ına 'value=' ile geçtiğimiz için Streamlit'in widget-state
+# temizleme tuhaflığından bağımsız olarak her oturumda korunur.
+st.session_state.setdefault("col_no_ilk", 2)
+st.session_state.setdefault("col_no_son", 7)
+st.session_state.setdefault("col_ad_ilk", 13)
+st.session_state.setdefault("col_ad_son", 32)
+st.session_state.setdefault("col_son_sutun", 215)
 
 
 # ---------- ADIM 0: VERİ & SINIF SEÇİMİ ----------
@@ -461,15 +464,30 @@ if st.session_state.step == 0:
     txt_file = st.file_uploader("TXT dosyasını seçiniz", type=["txt"], key="txt_uploader")
 
     with st.form("col_form"):
-        st.markdown("**Kolon konumları (1-tabanlı)**")
+        st.markdown("**Kolon konumları (1-tabanlı)** — önceki oturumdaki değerler hatırlanır, gerekirse değiştirin.")
         c1, c2 = st.columns(2)
         with c1:
-            no_ilk = st.number_input("Öğrenci No Başlangıç Sütunu", min_value=1, step=1, key="no_ilk_input") - 1
-            ad_ilk = st.number_input("Ad Başlangıç Sütunu", min_value=1, step=1, key="ad_ilk_input") - 1
-            son_sutun = st.number_input("Son Sütun Numarası", min_value=1, step=1, key="son_sutun_input") - 1
+            no_ilk_1 = st.number_input(
+                "Öğrenci No Başlangıç Sütunu", min_value=1, step=1,
+                value=st.session_state.col_no_ilk,
+            )
+            ad_ilk_1 = st.number_input(
+                "Ad Başlangıç Sütunu", min_value=1, step=1,
+                value=st.session_state.col_ad_ilk,
+            )
+            son_sutun_1 = st.number_input(
+                "Son Sütun Numarası", min_value=1, step=1,
+                value=st.session_state.col_son_sutun,
+            )
         with c2:
-            no_son = st.number_input("Öğrenci No Bitiş Sütunu", min_value=1, step=1, key="no_son_input") - 1
-            ad_son = st.number_input("Ad Bitiş Sütunu", min_value=1, step=1, key="ad_son_input") - 1
+            no_son_1 = st.number_input(
+                "Öğrenci No Bitiş Sütunu", min_value=1, step=1,
+                value=st.session_state.col_no_son,
+            )
+            ad_son_1 = st.number_input(
+                "Ad Bitiş Sütunu", min_value=1, step=1,
+                value=st.session_state.col_ad_son,
+            )
         submit_cols = st.form_submit_button("İşleme Başla")
 
     if submit_cols:
@@ -479,6 +497,20 @@ if st.session_state.step == 0:
         if st.session_state.available_sinif and not st.session_state.selected_sinif:
             st.warning("En az bir sınıf seçmelisiniz!")
             st.stop()
+
+        # 1-tabanlı değerleri sonraki oturumlar için sakla
+        st.session_state.col_no_ilk = no_ilk_1
+        st.session_state.col_no_son = no_son_1
+        st.session_state.col_ad_ilk = ad_ilk_1
+        st.session_state.col_ad_son = ad_son_1
+        st.session_state.col_son_sutun = son_sutun_1
+
+        # 0-tabanlı slice değerleri (işleme için)
+        no_ilk = no_ilk_1 - 1
+        no_son = no_son_1 - 1
+        ad_ilk = ad_ilk_1 - 1
+        ad_son = ad_son_1 - 1
+        son_sutun = son_sutun_1 - 1
 
         st.session_state.no_ilk = no_ilk
         st.session_state.no_son = no_son
