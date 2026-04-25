@@ -585,6 +585,93 @@ elif st.session_state.step == 1:
         data.at[idx, 'Kayıt'] = True
         st.session_state.idx += 1
 
+    # --- TXT satırının tamamı (detaylı inceleme için) ---
+    raw_line = row[0] if isinstance(row[0], str) else str(row[0])
+    no_slice = raw_line[no_ilk:no_son]
+    ad_slice = raw_line[ad_ilk:ad_son]
+    with st.expander(
+        "TXT satırının tamamını göster",
+        expanded=(len(eslesmeler) == 0),
+    ):
+        st.code(raw_line, language="text")
+        st.caption(
+            f"Numara bölgesi (sütun {no_ilk+1}-{no_son}): `{no_slice}`  •  "
+            f"Ad bölgesi (sütun {ad_ilk+1}-{ad_son}): `{ad_slice}`  •  "
+            f"Toplam uzunluk: {len(raw_line)} karakter"
+        )
+
+    # --- Yan menü: Excel'de manuel arama ---
+    with st.sidebar:
+        st.markdown("### Manuel Arama")
+        st.caption(
+            "Eşleşme bulunamazsa Excel listesinde sınıf veya isimle arayıp "
+            "doğrudan öğrenciyi seçebilirsiniz."
+        )
+
+        full_liste = st.session_state.liste_full
+        sinif_col_full = st.session_state.sinif_col
+        available_sinif_full = st.session_state.get("available_sinif", [])
+
+        sb_sinif = []
+        if available_sinif_full and sinif_col_full:
+            st.session_state.setdefault("sb_sinif", list(available_sinif_full))
+            sb_sinif = st.multiselect(
+                "Sınıf filtresi",
+                options=available_sinif_full,
+                key="sb_sinif",
+            )
+
+        sb_query = st.text_input(
+            "İsim ara",
+            placeholder="örn. ahmet yılmaz",
+            key="sb_query",
+        )
+
+        filtered = full_liste
+        if sb_sinif and sinif_col_full:
+            filtered = filtered[
+                filtered[sinif_col_full].astype(str).str.strip().isin(sb_sinif)
+            ]
+        if sb_query.strip():
+            q = normalize_turkish(sb_query)
+            filtered = filtered[
+                filtered['Ad_soyad'].apply(lambda x: q in normalize_turkish(str(x)))
+            ]
+
+        st.caption(f"**{len(filtered)}** sonuç")
+
+        max_show = 100
+        if len(filtered) > 0:
+            shown = filtered.head(max_show)
+            opt_labels = []
+            opt_no = []
+            for _, r in shown.iterrows():
+                sinif_str = str(r[sinif_col_full]) if sinif_col_full else "?"
+                opt_labels.append(
+                    f"{r['Ad_soyad']} — No:{r['Öğrenci No']} — Sınıf:{sinif_str}"
+                )
+                opt_no.append(str(r["Öğrenci No"]))
+
+            sel_label = st.selectbox(
+                "Öğrenci seç",
+                options=opt_labels,
+                key="sb_pick",
+            )
+
+            if st.button(
+                "Bu öğrenciyi kaydet ve ilerle",
+                use_container_width=True,
+                key="sb_save",
+            ):
+                if sel_label in opt_labels:
+                    kaydet_ve_ilerle(opt_no[opt_labels.index(sel_label)])
+                    st.rerun()
+
+            if len(filtered) > max_show:
+                st.caption(f"İlk {max_show} sonuç gösteriliyor — daha çok daraltın.")
+        else:
+            st.info("Filtreye uyan öğrenci yok.")
+
     # OTOMATİK EŞLEŞME (tek sonuç ve >= 0.95)
     if len(eslesmeler) == 1 and eslesmeler[0][2] >= 0.95:
         st.success(
