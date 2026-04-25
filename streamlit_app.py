@@ -564,6 +564,8 @@ elif st.session_state.step == 1:
     data = st.session_state.data
     no_ilk = st.session_state.no_ilk
     no_son = st.session_state.no_son
+    ad_ilk = st.session_state.ad_ilk
+    ad_son = st.session_state.ad_son
     son_sutun = st.session_state.son_sutun
     no_len = st.session_state.no_len
     idx = st.session_state.idx
