@@ -4,7 +4,215 @@ import difflib
 import unicodedata
 import io
 
-st.set_page_config(page_title="Öğrenci No Eşleştirici", layout="wide")
+st.set_page_config(
+    page_title="Öğrenci No Eşleştirici",
+    page_icon=":mortar_board:",
+    layout="wide",
+)
+
+
+# ---------- Tema ----------
+
+BRAND_PRIMARY = "#4F46E5"        # indigo
+BRAND_PRIMARY_DARK = "#3730A3"
+BRAND_PRIMARY_LIGHT = "#818CF8"
+BRAND_ACCENT = "#F59E0B"         # amber
+BRAND_ACCENT_DARK = "#D97706"
+BRAND_SUCCESS = "#10B981"
+BRAND_INFO = "#0EA5E9"
+BRAND_WARN = "#F59E0B"
+BRAND_DANGER = "#EF4444"
+BRAND_BG = "#F9FAFB"
+BRAND_TEXT = "#111827"
+BRAND_TEXT_MUTED = "#6B7280"
+
+CUSTOM_CSS = f"""
+<style>
+.stApp {{
+    background: linear-gradient(180deg, #F9FAFB 0%, #EEF2FF 100%);
+}}
+
+/* Hero başlık */
+.nk-hero {{
+    background: linear-gradient(135deg, {BRAND_PRIMARY} 0%, {BRAND_PRIMARY_LIGHT} 60%, {BRAND_ACCENT} 130%);
+    color: white;
+    padding: 1.6rem 2rem;
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 10px 30px -10px rgba(79, 70, 229, 0.45);
+}}
+.nk-hero h1 {{
+    color: white !important;
+    margin: 0 0 0.25rem 0;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}}
+.nk-hero p {{
+    color: rgba(255,255,255,0.9);
+    margin: 0;
+    font-size: 1rem;
+}}
+
+/* Adım göstergesi */
+.nk-steps {{
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}}
+.nk-step {{
+    flex: 1;
+    min-width: 140px;
+    padding: 0.7rem 1rem;
+    border-radius: 12px;
+    background: white;
+    border: 2px solid #E5E7EB;
+    color: {BRAND_TEXT_MUTED};
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.2s;
+}}
+.nk-step.active {{
+    background: linear-gradient(90deg, {BRAND_PRIMARY} 0%, {BRAND_PRIMARY_LIGHT} 100%);
+    color: white;
+    border-color: {BRAND_PRIMARY};
+    box-shadow: 0 6px 18px -6px rgba(79,70,229,0.5);
+}}
+.nk-step.done {{
+    background: #ECFDF5;
+    color: {BRAND_SUCCESS};
+    border-color: {BRAND_SUCCESS};
+}}
+
+/* Kart */
+.nk-card {{
+    background: white;
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid #E5E7EB;
+    box-shadow: 0 4px 14px -8px rgba(17,24,39,0.08);
+    margin-bottom: 1rem;
+}}
+.nk-card-title {{
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: {BRAND_PRIMARY_DARK};
+    margin-bottom: 0.5rem;
+}}
+
+/* Etiket / badge */
+.nk-badge {{
+    display: inline-block;
+    padding: 0.18rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    background: #EEF2FF;
+    color: {BRAND_PRIMARY_DARK};
+    margin-right: 0.3rem;
+}}
+.nk-badge.accent {{ background: #FEF3C7; color: {BRAND_ACCENT_DARK}; }}
+.nk-badge.success {{ background: #D1FAE5; color: #065F46; }}
+
+/* Butonlar */
+.stButton > button, .stDownloadButton > button, .stFormSubmitButton > button {{
+    background: linear-gradient(90deg, {BRAND_PRIMARY} 0%, {BRAND_PRIMARY_LIGHT} 100%);
+    color: white;
+    border: none;
+    padding: 0.55em 1.2em;
+    border-radius: 10px;
+    font-weight: 700;
+    transition: transform 0.08s, box-shadow 0.15s, filter 0.15s;
+    box-shadow: 0 4px 12px -4px rgba(79,70,229,0.45);
+}}
+.stButton > button:hover, .stDownloadButton > button:hover, .stFormSubmitButton > button:hover {{
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow: 0 8px 18px -6px rgba(79,70,229,0.55);
+    color: white;
+}}
+.stButton > button:focus, .stDownloadButton > button:focus, .stFormSubmitButton > button:focus {{
+    color: white;
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.35);
+}}
+
+/* İkincil buton (secondary) — daha sade */
+.stButton > button[kind="secondary"] {{
+    background: white;
+    color: {BRAND_PRIMARY_DARK};
+    border: 2px solid {BRAND_PRIMARY_LIGHT};
+    box-shadow: none;
+}}
+.stButton > button[kind="secondary"]:hover {{
+    background: #EEF2FF;
+    color: {BRAND_PRIMARY_DARK};
+}}
+
+/* Progress bar rengi */
+.stProgress > div > div > div > div {{
+    background: linear-gradient(90deg, {BRAND_PRIMARY} 0%, {BRAND_ACCENT} 100%);
+}}
+
+/* File uploader */
+[data-testid="stFileUploader"] section {{
+    border: 2px dashed {BRAND_PRIMARY_LIGHT};
+    background: #F5F3FF;
+    border-radius: 12px;
+}}
+
+/* Başlık renkleri */
+h1, h2, h3 {{
+    color: {BRAND_PRIMARY_DARK};
+    font-weight: 700;
+}}
+
+/* st.success / info / warning / error rengini canlandır */
+[data-testid="stAlert"] {{
+    border-radius: 12px;
+    border-left-width: 6px;
+}}
+
+/* Alt bilgi */
+.nk-footer {{
+    text-align: center;
+    color: {BRAND_TEXT_MUTED};
+    font-size: 0.85rem;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #E5E7EB;
+}}
+</style>
+"""
+
+st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+
+
+def render_hero(subtitle="TXT sınav verisi ile Excel öğrenci listesini akıllı eşleştirme"):
+    st.markdown(
+        f"""
+        <div class="nk-hero">
+            <h1>Öğrenci No Eşleştirici</h1>
+            <p>{subtitle}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_steps(current_step):
+    """current_step: 0 (yükleme), 1 (eşleştirme), 2 (sonuç)"""
+    labels = ["1. Veri & Sınıf Seçimi", "2. Eşleştirme", "3. Sonuç"]
+    parts = []
+    for i, label in enumerate(labels):
+        if i < current_step:
+            cls = "done"
+        elif i == current_step:
+            cls = "active"
+        else:
+            cls = ""
+        parts.append(f'<div class="nk-step {cls}">{label}</div>')
+    st.markdown(f'<div class="nk-steps">{"".join(parts)}</div>', unsafe_allow_html=True)
 
 
 # ---------- Yardımcı fonksiyonlar ----------
@@ -49,7 +257,8 @@ def get_col(df, col_list):
 
 
 def precompute_liste_variations(liste):
-    """Excel listesindeki her satır için isim varyasyonlarını önceden hesapla."""
+    """Excel listesindeki her satır için isim varyasyonlarını önceden hesapla.
+    Liste'nin index sırasına göre list döner."""
     out = []
     for _, list_row in liste.iterrows():
         ad_soyad = list_row['Ad_soyad']
@@ -59,7 +268,8 @@ def precompute_liste_variations(liste):
 
 
 def find_matches(ad_soyad, liste, liste_variations, alan_col, sinif_col, sube_col, threshold=0.70):
-    """Bir TXT öğrencisi için Excel listesinden eşleşmeleri bul."""
+    """Bir TXT öğrencisi için Excel listesinden eşleşmeleri bul.
+    liste'nin index'i 0..N-1 (reset_index uygulanmış) olmalı."""
     name_variations = prepare_name_variations(ad_soyad)
     eslesmeler = []
     for s, list_row in liste.iterrows():
@@ -86,8 +296,25 @@ def find_matches(ad_soyad, liste, liste_variations, alan_col, sinif_col, sube_co
 
 
 def reset_only_txt_state():
-    """Sadece TXT'ye özel state'i temizle. Excel listesi ve sütun ayarları korunur."""
-    for k in ["data", "data_okuma", "idx", "current_eslesmeler", "current_eslesmeler_idx"]:
+    """Sadece TXT'ye özel state'i temizle. Excel listesi, sınıf filtresi ve sütun ayarları korunur."""
+    for k in [
+        "data", "data_okuma", "idx",
+        "current_eslesmeler", "current_eslesmeler_idx",
+        "liste_active", "liste_active_variations",
+    ]:
+        st.session_state.pop(k, None)
+
+
+def reset_excel_only():
+    """Excel listesi ile ilgili her şeyi sil (sütun ayarları korunur)."""
+    for k in [
+        "liste_full", "liste_full_variations",
+        "liste_active", "liste_active_variations",
+        "alan_col", "sinif_col", "sube_col",
+        "selected_sinif", "available_sinif",
+        "current_eslesmeler", "current_eslesmeler_idx",
+        "data", "data_okuma", "idx",
+    ]:
         st.session_state.pop(k, None)
 
 
@@ -97,16 +324,53 @@ def reset_all_state():
         del st.session_state[k]
 
 
-# ---------- Başlık ----------
+def read_excel_into_state(excel_file):
+    """Excel'i oku, varyasyonları hesapla, sütunları tespit et, sınıfları çıkar."""
+    try:
+        liste = pd.read_excel(excel_file)
+    except Exception as e:
+        st.error(f"Excel okuma hatası: {e}")
+        return False
 
-st.title("Öğrenci No Eşleştirici ve Kontrol Paneli")
+    if "Adı" not in liste.columns or "Soyadı" not in liste.columns:
+        st.error("Excel dosyasında 'Adı' ve 'Soyadı' sütunları bulunamadı.")
+        return False
+
+    liste = liste.reset_index(drop=True)
+    liste['Ad_soyad'] = liste.apply(lambda r: f"{r['Adı']} {r['Soyadı']}", axis=1)
+    liste['Soyad_ad'] = liste.apply(lambda r: f"{r['Soyadı']} {r['Adı']}", axis=1)
+
+    st.session_state.liste_full = liste
+    st.session_state.liste_full_variations = precompute_liste_variations(liste)
+    st.session_state.alan_col = get_col(liste, ["Alan", "ALAN", "alan", "Alanı", "ALANI", "Dal", "DAL", "dal"])
+    st.session_state.sinif_col = get_col(liste, ["Sınıf", "SINIF", "sinif", "Sinif"])
+    st.session_state.sube_col = get_col(liste, ["Şube", "ŞUBE", "sube", "Sube", "SUBE"])
+
+    if st.session_state.sinif_col:
+        sinif_values = liste[st.session_state.sinif_col].dropna().astype(str).str.strip()
+        sinif_values = sinif_values[sinif_values != ""]
+        # Doğal sıralama: önce sayısal sınıflar, sonra harfli (Mezun vs.)
+        unique_sinif = sorted(set(sinif_values), key=lambda x: (not x[:2].strip().isdigit(), x))
+        st.session_state.available_sinif = unique_sinif
+        st.session_state.selected_sinif = unique_sinif.copy()
+    else:
+        st.session_state.available_sinif = []
+        st.session_state.selected_sinif = []
+
+    return True
+
+
+# ---------- Hero & Adımlar ----------
+
+render_hero()
+render_steps(st.session_state.get("step", 0))
+
 
 # ---------- State başlangıç değerleri ----------
 
-st.session_state.setdefault("step", 0)            # 0: form, 1: işlem, 2: sonuç
+st.session_state.setdefault("step", 0)
 st.session_state.setdefault("data_okuma", [])
 st.session_state.setdefault("idx", 0)
-# Sütun varsayılanları (kullanıcı değiştirirse güncellenir, yeni TXT'de korunur)
 st.session_state.setdefault("no_ilk_input", 2)
 st.session_state.setdefault("no_son_input", 7)
 st.session_state.setdefault("ad_ilk_input", 13)
@@ -114,56 +378,108 @@ st.session_state.setdefault("ad_son_input", 32)
 st.session_state.setdefault("son_sutun_input", 215)
 
 
-# ---------- ADIM 0: SÜTUN FORMU ----------
+# ---------- ADIM 0: VERİ & SINIF SEÇİMİ ----------
 
 if st.session_state.step == 0:
-    has_cached_liste = "liste" in st.session_state and "liste_variations" in st.session_state
+    has_excel = "liste_full" in st.session_state
 
-    if has_cached_liste:
-        st.success(
-            f"Aynı kurumun Excel listesi bellekte ({len(st.session_state.liste)} öğrenci). "
-            "Yalnızca yeni TXT dosyasını yüklemeniz yeterli."
+    # --- Excel yükleme bloğu ---
+    if not has_excel:
+        st.markdown(
+            '<div class="nk-card"><div class="nk-card-title">1. Excel öğrenci listesini yükleyin</div>'
+            'Liste yüklendiğinde sınıf seviyeleri otomatik olarak çıkarılır.</div>',
+            unsafe_allow_html=True,
         )
-        col_a, col_b = st.columns([3, 1])
-        with col_b:
-            if st.button("Excel listesini değiştir", use_container_width=True):
-                for k in ["liste", "liste_variations", "alan_col", "sinif_col", "sube_col"]:
-                    st.session_state.pop(k, None)
+        excel_file = st.file_uploader("Excel dosyasını seçiniz (.xlsx)", type=["xlsx"], key="excel_uploader")
+        if excel_file is not None:
+            with st.spinner("Excel okunuyor ve isim varyasyonları hazırlanıyor..."):
+                ok = read_excel_into_state(excel_file)
+            if ok:
                 st.rerun()
+        st.stop()
 
-    excel_file = None
-    if not has_cached_liste:
-        excel_file = st.file_uploader("Excel dosyasını seçiniz (.xlsx)", type=["xlsx"])
-    txt_file = st.file_uploader("TXT dosyasını seçiniz", type=["txt"])
+    # --- Excel yüklendi: özet kart ---
+    liste_full = st.session_state.liste_full
+    sinif_col = st.session_state.sinif_col
+    alan_col = st.session_state.alan_col
+
+    badges = [f'<span class="nk-badge">{len(liste_full)} öğrenci</span>']
+    if sinif_col:
+        badges.append(f'<span class="nk-badge accent">Sınıf sütunu: {sinif_col}</span>')
+    if alan_col:
+        badges.append(f'<span class="nk-badge success">Alan sütunu: {alan_col}</span>')
+
+    col_info, col_change = st.columns([4, 1])
+    with col_info:
+        st.markdown(
+            f'<div class="nk-card"><div class="nk-card-title">Excel listesi hazır</div>'
+            f'{"".join(badges)}</div>',
+            unsafe_allow_html=True,
+        )
+    with col_change:
+        st.write("")
+        if st.button("Excel'i değiştir", use_container_width=True, key="btn_change_excel"):
+            reset_excel_only()
+            st.rerun()
+
+    # --- Sınıf filtresi ---
+    if st.session_state.available_sinif:
+        st.markdown(
+            '<div class="nk-card"><div class="nk-card-title">2. Sınav hangi sınıflara uygulanıyor?</div>'
+            'Yalnızca seçtiğiniz sınıflardaki öğrenciler arasında eşleştirme yapılır. '
+            'Örneğin TYT için 12. sınıf ve Mezun seçebilirsiniz.</div>',
+            unsafe_allow_html=True,
+        )
+        col_pick, col_quick = st.columns([3, 1])
+        with col_quick:
+            if st.button("Tümünü seç", use_container_width=True, key="btn_pick_all"):
+                st.session_state.selected_sinif = st.session_state.available_sinif.copy()
+                st.rerun()
+            if st.button("Tümünü temizle", use_container_width=True, key="btn_pick_none"):
+                st.session_state.selected_sinif = []
+                st.rerun()
+        with col_pick:
+            st.session_state.selected_sinif = st.multiselect(
+                "Eşleştirmede kullanılacak sınıflar",
+                options=st.session_state.available_sinif,
+                default=st.session_state.selected_sinif,
+                key="multiselect_sinif",
+            )
+        n_filt = liste_full[sinif_col].astype(str).str.strip().isin(st.session_state.selected_sinif).sum()
+        st.caption(
+            f"Seçilen sınıflarda **{n_filt}** öğrenci var "
+            f"(toplam {len(liste_full)} kayıttan)."
+        )
+    else:
+        st.warning("Excel'de 'Sınıf' sütunu bulunamadı — sınıf filtrelemesi devre dışı, tüm liste kullanılacak.")
+
+    # --- TXT yükleme + sütun ayarları ---
+    st.markdown(
+        '<div class="nk-card"><div class="nk-card-title">3. TXT sınav dosyası ve sütun ayarları</div></div>',
+        unsafe_allow_html=True,
+    )
+    txt_file = st.file_uploader("TXT dosyasını seçiniz", type=["txt"], key="txt_uploader")
 
     with st.form("col_form"):
-        st.markdown("### Kolon Konumlarını Giriniz")
-        no_ilk = st.number_input(
-            "Öğrenci No Başlangıç Sütunu", min_value=1, step=1, key="no_ilk_input",
-        ) - 1
-        no_son = st.number_input(
-            "Öğrenci No Bitiş Sütunu", min_value=1, step=1, key="no_son_input",
-        ) - 1
-        ad_ilk = st.number_input(
-            "Ad Başlangıç Sütunu", min_value=1, step=1, key="ad_ilk_input",
-        ) - 1
-        ad_son = st.number_input(
-            "Ad Bitiş Sütunu", min_value=1, step=1, key="ad_son_input",
-        ) - 1
-        son_sutun = st.number_input(
-            "Son Sütun Numarası", min_value=1, step=1, key="son_sutun_input",
-        ) - 1
-        submit_cols = st.form_submit_button("Başla")
+        st.markdown("**Kolon konumları (1-tabanlı)**")
+        c1, c2 = st.columns(2)
+        with c1:
+            no_ilk = st.number_input("Öğrenci No Başlangıç Sütunu", min_value=1, step=1, key="no_ilk_input") - 1
+            ad_ilk = st.number_input("Ad Başlangıç Sütunu", min_value=1, step=1, key="ad_ilk_input") - 1
+            son_sutun = st.number_input("Son Sütun Numarası", min_value=1, step=1, key="son_sutun_input") - 1
+        with c2:
+            no_son = st.number_input("Öğrenci No Bitiş Sütunu", min_value=1, step=1, key="no_son_input") - 1
+            ad_son = st.number_input("Ad Bitiş Sütunu", min_value=1, step=1, key="ad_son_input") - 1
+        submit_cols = st.form_submit_button("İşleme Başla")
 
     if submit_cols:
-        if not has_cached_liste and not excel_file:
-            st.warning("Excel dosyası yüklenmeli!")
-            st.stop()
         if not txt_file:
             st.warning("TXT dosyası yüklenmeli!")
             st.stop()
+        if st.session_state.available_sinif and not st.session_state.selected_sinif:
+            st.warning("En az bir sınıf seçmelisiniz!")
+            st.stop()
 
-        # Sütun ayarlarını kaydet
         st.session_state.no_ilk = no_ilk
         st.session_state.no_son = no_son
         st.session_state.ad_ilk = ad_ilk
@@ -171,30 +487,22 @@ if st.session_state.step == 0:
         st.session_state.son_sutun = son_sutun
         st.session_state.no_len = no_son - no_ilk
 
-        # Excel listesi (yalnızca gerekirse oku)
-        if not has_cached_liste:
-            try:
-                liste = pd.read_excel(excel_file)
-            except Exception as e:
-                st.error(f"Excel okuma hatası: {e}")
-                st.stop()
-            liste['Ad_soyad'] = liste.apply(
-                lambda row: f"{row['Adı']} {row['Soyadı']}", axis=1
-            )
-            liste['Soyad_ad'] = liste.apply(
-                lambda row: f"{row['Soyadı']} {row['Adı']}", axis=1
-            )
-            st.session_state.liste = liste
-            st.session_state.liste_variations = precompute_liste_variations(liste)
-            st.session_state.alan_col = get_col(
-                liste, ["Alan", "ALAN", "alan", "Alanı", "ALANI", "Dal", "DAL", "dal"]
-            )
-            st.session_state.sinif_col = get_col(
-                liste, ["Sınıf", "SINIF", "sinif", "Sinif"]
-            )
-            st.session_state.sube_col = get_col(
-                liste, ["Şube", "ŞUBE", "sube", "Sube", "SUBE"]
-            )
+        # Aktif (filtrelenmiş) liste'yi hazırla
+        if sinif_col and st.session_state.available_sinif:
+            mask = liste_full[sinif_col].astype(str).str.strip().isin(st.session_state.selected_sinif)
+            keep_indices = list(liste_full.index[mask])
+            active = liste_full.loc[mask].reset_index(drop=True)
+            active_vars = [st.session_state.liste_full_variations[i] for i in keep_indices]
+        else:
+            active = liste_full.reset_index(drop=True)
+            active_vars = list(st.session_state.liste_full_variations)
+
+        if len(active) == 0:
+            st.error("Seçilen sınıflarda öğrenci yok. Lütfen başka sınıf seçin.")
+            st.stop()
+
+        st.session_state.liste_active = active
+        st.session_state.liste_active_variations = active_vars
 
         # TXT'yi oku
         try:
@@ -216,8 +524,8 @@ if st.session_state.step == 0:
 # ---------- ADIM 1: ÖĞRENCİ İŞLEME ----------
 
 elif st.session_state.step == 1:
-    liste = st.session_state.liste
-    liste_variations = st.session_state.liste_variations
+    liste = st.session_state.liste_active
+    liste_variations = st.session_state.liste_active_variations
     alan_col = st.session_state.alan_col
     sinif_col = st.session_state.sinif_col
     sube_col = st.session_state.sube_col
@@ -232,13 +540,27 @@ elif st.session_state.step == 1:
         st.session_state.step = 2
         st.rerun()
 
-    # İlerleme çubuğu
+    # Bilgi şeridi
+    sinif_info = ""
+    if st.session_state.get("selected_sinif"):
+        sinif_info = (
+            f'<span class="nk-badge accent">Sınıflar: '
+            f'{", ".join(st.session_state.selected_sinif)}</span>'
+        )
+    st.markdown(
+        f'<div class="nk-card" style="padding:0.7rem 1rem;">'
+        f'<span class="nk-badge">Aktif liste: {len(liste)} öğrenci</span>'
+        f'{sinif_info}'
+        f'<span class="nk-badge success">İşlendi: {idx}/{len(data)}</span>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+
     st.progress(idx / len(data), text=f"{idx}/{len(data)} işlendi")
 
     row = data.iloc[idx]
     ad_soyad = row['Ad_Soyad']
 
-    # Eşleşmeleri yalnızca idx değiştiğinde hesapla (rerun'larda yeniden çalışmasın)
     if st.session_state.get("current_eslesmeler_idx") != idx:
         with st.spinner(f"'{ad_soyad}' için eşleşmeler aranıyor..."):
             st.session_state.current_eslesmeler = find_matches(
@@ -247,7 +569,12 @@ elif st.session_state.step == 1:
         st.session_state.current_eslesmeler_idx = idx
     eslesmeler = st.session_state.current_eslesmeler
 
-    st.markdown(f"### {idx+1}/{len(data)} : **{ad_soyad}** öğrencisi için işlem")
+    st.markdown(
+        f'<div class="nk-card"><div class="nk-card-title">'
+        f'Öğrenci #{idx+1} / {len(data)} &nbsp;—&nbsp; {ad_soyad}'
+        f'</div></div>',
+        unsafe_allow_html=True,
+    )
 
     def kaydet_ve_ilerle(ogr_no_str):
         st.session_state.data_okuma.append([
@@ -261,8 +588,8 @@ elif st.session_state.step == 1:
     # OTOMATİK EŞLEŞME (tek sonuç ve >= 0.95)
     if len(eslesmeler) == 1 and eslesmeler[0][2] >= 0.95:
         st.success(
-            f"Otomatik eşleşme: {eslesmeler[0][0]} "
-            f"(No: {eslesmeler[0][1]}, Oran: {eslesmeler[0][2]:.2f})"
+            f"Otomatik eşleşme: **{eslesmeler[0][0]}** "
+            f"— No: `{eslesmeler[0][1]}` — Oran: {eslesmeler[0][2]:.2f}"
         )
         kaydet_ve_ilerle(str(eslesmeler[0][1]))
         st.rerun()
@@ -270,8 +597,8 @@ elif st.session_state.step == 1:
         with st.form("ogrenci_form"):
             if len(eslesmeler) > 0:
                 st.info(
-                    f"{len(eslesmeler)} eşleşme bulundu. "
-                    f"En yüksek benzerlik: {eslesmeler[0][2]:.2f}"
+                    f"**{len(eslesmeler)}** eşleşme bulundu. "
+                    f"En yüksek benzerlik: **{eslesmeler[0][2]:.2f}**"
                 )
                 secenekler = [
                     f"{i+1}. {e[0]} | No:{e[1]} | "
@@ -283,18 +610,14 @@ elif st.session_state.step == 1:
                 secim = st.radio("Uygun öğrenciyi seçiniz", secenekler, index=0)
                 manuel_no = ""
                 if secim.startswith("Hiçbiri"):
-                    manuel_no = st.text_input(
-                        f"{ad_soyad} için manuel öğrenci numarası giriniz:"
-                    )
+                    manuel_no = st.text_input(f"{ad_soyad} için manuel öğrenci numarası giriniz:")
             else:
                 st.warning(f"{ad_soyad} için eşleşme bulunamadı!")
                 secenekler = ["Hiçbiri (manuel no gir)", "Atla (kaydetme, sonraki öğrenciye geç)"]
                 secim = st.radio("Seçim", secenekler, index=0)
                 manuel_no = ""
                 if secim.startswith("Hiçbiri"):
-                    manuel_no = st.text_input(
-                        f"{ad_soyad} için manuel öğrenci numarası giriniz:"
-                    )
+                    manuel_no = st.text_input(f"{ad_soyad} için manuel öğrenci numarası giriniz:")
 
             kaydet = st.form_submit_button("Kaydet ve Sonraki")
 
@@ -317,10 +640,13 @@ elif st.session_state.step == 1:
 # ---------- ADIM 2: SONUÇ ----------
 
 elif st.session_state.step == 2:
-    st.success("Tüm öğrenciler işlendi. Sonuçlar aşağıda:")
-    df_okuma = pd.DataFrame(
-        st.session_state.data_okuma, columns=["ön", "No", "son"]
+    st.markdown(
+        '<div class="nk-card"><div class="nk-card-title">Tüm öğrenciler işlendi</div>'
+        'Sonuçları aşağıdan inceleyebilir, TXT olarak indirebilirsiniz.</div>',
+        unsafe_allow_html=True,
     )
+
+    df_okuma = pd.DataFrame(st.session_state.data_okuma, columns=["ön", "No", "son"])
     st.dataframe(df_okuma, use_container_width=True)
 
     txt = io.StringIO()
@@ -330,6 +656,7 @@ elif st.session_state.step == 2:
         data=txt.getvalue().encode("cp1254", errors="replace"),
         file_name="sonuc.txt",
         mime="text/plain",
+        use_container_width=True,
     )
 
     st.markdown("---")
@@ -337,8 +664,9 @@ elif st.session_state.step == 2:
     with col1:
         if st.button(
             "Aynı Kurum, Yeni TXT",
-            help="Excel listesini ve sütun ayarlarını koruyarak yeni bir TXT işle.",
+            help="Excel listesini, sınıf seçimini ve sütun ayarlarını koruyarak yeni TXT işle.",
             use_container_width=True,
+            key="btn_same_inst",
         ):
             reset_only_txt_state()
             st.session_state.step = 0
@@ -348,6 +676,16 @@ elif st.session_state.step == 2:
             "Yeni Kurum (Sıfırdan)",
             help="Excel listesi dahil her şeyi sıfırla.",
             use_container_width=True,
+            key="btn_new_inst",
         ):
             reset_all_state()
             st.rerun()
+
+
+st.markdown(
+    '<div class="nk-footer">Öğrenci No Eşleştirici — '
+    '<a href="https://www.dijimind.com" target="_blank" '
+    f'style="color:{BRAND_PRIMARY}; text-decoration:none; font-weight:600;">dijimind.com</a>'
+    '</div>',
+    unsafe_allow_html=True,
+)
